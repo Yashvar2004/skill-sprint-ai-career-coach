@@ -1,0 +1,2617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Sprint Pro - Gamified Career Coach with SAP Integration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --danger: #f72585;
+            --warning: #fca311;
+            --info: #2ec4b6;
+            --sap-blue: #0f4c81;
+            --sap-green: #30914c;
+            --gold: #ffd700;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 1000px;
+            overflow: hidden;
+            margin: 20px;
+            position: relative;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header {
+            background: linear-gradient(to right, var(--primary), var(--sap-blue));
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="0,100 100,0 100,100" fill="rgba(255,255,255,0.1)" /></svg>');
+            background-size: cover;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-section, .quiz-section, .roadmap-section, .mentorship-section {
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            transform: scale(0.95);
+            opacity: 0;
+            animation: zoomIn 0.5s ease forwards;
+        }
+
+        @keyframes zoomIn {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .quiz-section .question {
+    transform: perspective(1000px) rotateX(5deg) rotateY(5deg);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.quiz-section .question:hover {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+}
+    /* Add Puzzle Game Styles */
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        .puzzle-card {
+            aspect-ratio: 1;
+            background-color: #4361ee;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            color: white;
+            transition: transform 0.3s;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .puzzle-card.flipped {
+            background-color: white;
+            color: #4361ee;
+            transform: rotateY(180deg);
+        }
+
+        .puzzle-card.matched {
+            background-color: #4cc9f0;
+            cursor: default;
+        }
+
+        .symbol-hidden {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .puzzle-game-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* SAP Integration Elements */
+        .sap-card {
+            background: linear-gradient(135deg, var(--sap-blue), var(--sap-green));
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .sap-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .cert-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--sap-blue), var(--sap-green));
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            margin: 5px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+
+        .cert-badge:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .daily-challenge {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .challenge-timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        /* Form styling */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: #f9f9f9;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            outline: none;
+            background: white;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-top: 15px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 20%;
+            height: 200%;
+            background: rgba(255,255,255,0.3);
+            transform: rotate(25deg);
+            transition: all 0.5s;
+        }
+
+        button:hover:after {
+            left: 120%;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(67, 97, 238, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-alt {
+            background: linear-gradient(to right, var(--info), #2a9d8f);
+        }
+
+        .quiz-section .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .quiz-section .question p {
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+
+        .quiz-section .question label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .quiz-section .question label:hover {
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .quiz-section .question input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+            accent-color: var(--primary);
+        }
+
+        .roadmap-section {
+            background: linear-gradient(to bottom right, #e8f4f8, #f0f9ff);
+            border-left: 4px solid var(--info);
+        }
+
+        .roadmap-section h2 {
+            color: var(--info);
+        }
+
+        .roadmap-section h3 {
+            color: var(--secondary);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .roadmap-section h3 i {
+            margin-right: 10px;
+            color: var(--info);
+        }
+
+        .roadmap-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .roadmap-section li {
+            margin-bottom: 12px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .roadmap-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .skill-gap {
+            color: var(--danger);
+            font-weight: 600;
+            background: rgba(247, 37, 133, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .mentorship-section {
+            background: linear-gradient(to bottom right, #f0f7ff, #e6f2ff);
+            border-left: 4px solid var(--accent);
+        }
+
+        .mentorship-section h2 {
+            color: var(--accent);
+        }
+
+        .mentorship-section h3 {
+            color: var(--primary);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .mentorship-section h3 i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+
+        .mentorship-section p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .mentor-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            animation: slideInLeft 0.5s ease;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .mentor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+            animation: pulse 2s infinite;
+        }
+
+        .mentor-info {
+            flex-grow: 1;
+        }
+
+        .mentor-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .mentor-title {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .mentor-contact {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .contact-btn {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            transition: var(--transition);
+            width: auto;
+        }
+
+        .email-btn {
+            background: linear-gradient(to right, var(--info), #2a9d8f);
+            color: white;
+        }
+
+        .schedule-btn {
+            background: linear-gradient(to right, var(--warning), #f77f00);
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .floating-icon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .floating-icon:nth-child(1) {
+            top: -30px;
+            left: -30px;
+            background: var(--danger);
+            animation-delay: 0s;
+        }
+
+        .floating-icon:nth-child(2) {
+            bottom: -30px;
+            right: -30px;
+            background: var(--success);
+            animation-delay: 1s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* Confetti canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Skill visualization */
+        .skill-visualization {
+            margin: 25px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f9ff;
+            border-left: 4px solid var(--success);
+        }
+
+        .skill-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .skill-level {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent), var(--primary));
+            border-radius: 5px;
+            width: 0;
+            transition: width 1s ease;
+        }
+
+        /* Student ID verification */
+        .id-verification {
+            background: linear-gradient(135deg, #ffd700, #ffb700);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .student-offers {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            color: white;
+        }
+
+        .offer-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .offer-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .offer-card .badge {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            margin-top: 5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                padding: 25px 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .form-section, .quiz-section, .roadmap-section, .mentorship-section {
+                padding: 20px;
+                margin: 15px;
+            }
+            
+            .mentor-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .mentor-avatar {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .mentor-contact {
+                justify-content: center;
+            }
+            
+            .player-stats {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+
+            .puzzle-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .form-section, .quiz-section, .roadmap-section, .mentorship-section {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            button {
+                padding: 14px;
+                font-size: 1rem;
+            }
+            
+            .floating-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .floating-icon:nth-child(1) {
+                top: -20px;
+                left: -20px;
+            }
+            
+            .floating-icon:nth-child(2) {
+                bottom: -20px;
+                right: -20px;
+            }
+
+            .mentor-contact {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .contact-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .spinner-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            display: none;
+        }
+        
+        .dark-mode {
+            background: #181a1b !important;
+            color: #f1f1f1 !important;
+        }
+        .dark-mode .card, .dark-mode .step, .dark-mode .mentorship-chat, .dark-mode .roadmap-card, .dark-mode .skill-card {
+            background: #23272b !important;
+            color: #f1f1f1 !important;
+        }
+        .dark-mode .form-control, .dark-mode input, .dark-mode select, .dark-mode textarea {
+            background: #23272b !important;
+            color: #f1f1f1 !important;
+            border-color: #444 !important;
+        }
+        .dark-mode .btn {
+            background: #343a40 !important;
+            color: #f1f1f1 !important;
+        }
+        .dark-mode .progress-steps:before {
+            background: #444 !important;
+        }
+        .dark-mode .step-indicator {
+            background: #23272b !important;
+            border-color: #444 !important;
+            color: #f1f1f1 !important;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="confetti-canvas"></canvas>
+    
+    <!-- Player Stats Panel -->
+    <div class="player-stats" id="playerStats">
+        <div class="d-flex align-items-center mb-2">
+            <i class="fas fa-user-astronaut me-2"></i>
+            <span id="playerName">Skill Explorer</span>
+        </div>
+        <div class="d-flex justify-content-between">
+            <span>Level <span id="playerLevel">1</span></span>
+            <span><i class="fas fa-star text-warning"></i> <span id="playerXP">0</span> XP</span>
+        </div>
+        <div class="xp-bar">
+            <div class="xp-fill" id="xpFill"></div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-trophy text-warning"></i> <span id="achievements">0</span></span>
+            <span><i class="fas fa-fire text-danger"></i> <span id="streak">0</span></span>
+        </div>
+    </div>
+    
+    <button id="darkModeToggle" class="btn btn-secondary position-fixed top-0 end-0 m-3" style="z-index:3000;">
+        <i class="fas fa-moon"></i> Dark Mode
+    </button>
+    
+    <!-- Toast container -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 3000">
+        <div id="toastContainer"></div>
+    </div>
+    
+    <!-- Achievement Popup Template -->
+    <div id="achievementPopup" class="achievement-popup d-none">
+        <div>
+            <i class="fas fa-trophy fa-3x mb-3"></i>
+            <h3>Achievement Unlocked!</h3>
+            <p id="achievementText"></p>
+            <div class="mt-3">
+                <span class="badge bg-warning text-dark">+50 XP</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Spinner overlay -->
+    <div class="spinner-overlay" id="spinnerOverlay">
+        <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Floating icons -->
+        <div class="floating-icon">
+            <i class="fas fa-graduation-cap"></i>
+        </div>
+        <div class="floating-icon">
+            <i class="fas fa-briefcase"></i>
+        </div>
+        
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h1>Skill Sprint Pro</h1>
+            <p>Gamified Career Development with SAP Integration</p>
+            <div class="mt-3">
+                <span class="badge bg-light text-dark me-2">
+                    <i class="fas fa-gamepad"></i> Gamified Learning
+                </span>
+                <span class="badge bg-primary me-2">
+                    <i class="fas fa-chart-line"></i> SAP Analytics
+                </span>
+                <span class="badge bg-success">
+                    <i class="fas fa-brain"></i> AI Powered
+                </span>
+            </div>
+            
+            <!-- Connection Status -->
+            <div class="mt-3" id="connectionStatus">
+                <span class="badge bg-secondary" id="connectionBadge">
+                    <i class="fas fa-spinner fa-spin"></i> Connecting...
+                </span>
+                <button class="btn btn-sm btn-outline-light ms-2" id="retryConnection" style="display: none;" onclick="testBackendConnection()">
+                    <i class="fas fa-redo"></i> Retry
+                </button>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress" id="progress-bar"></div>
+            </div>
+            <div class="progress-steps">
+                <span id="step1">Personal Info</span>
+                <span id="step2">Career Goals</span>
+                <span id="step3">Assessment</span>
+                <span id="step4">Roadmap</span>
+                <span id="step5">Mentorship</span>
+            </div>
+        </div>
+
+        <!-- Step 0: Home/Login Section -->
+        <div id="home-section" class="form-section">
+            <h2><i class="fas fa-user-circle"></i> Welcome! Tell Us About Yourself</h2>
+            
+            <!-- Daily SAP Challenge -->
+            <div class="daily-challenge mt-4">
+                <h3><i class="fas fa-calendar-day"></i> Daily SAP Challenge</h3>
+                <p>Complete today's challenge to earn bonus XP and unlock special badges!</p>
+                <div class="challenge-content">
+                    <h4>Memory Puzzle Challenge</h4>
+                    <p>Match SAP-related symbols in this memory game to complete today's challenge!</p>
+                    <div class="challenge-timer" id="challengeTimer">
+                        <i class="fas fa-clock"></i> <span id="timeLeft">23:59:59</span>
+                    </div>
+                </div>
+                
+                <!-- Puzzle Game Container -->
+                <div id="puzzle-game" class="puzzle-game-container hidden">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span>Time: <span id="game-timer">60</span>s</span>
+                            <span class="ms-3">Moves: <span id="game-moves">0</span></span>
+                        </div>
+                        <div>
+                            <span>Score: <span id="game-score">0</span></span>
+                        </div>
+                    </div>
+                    <div id="puzzle-area" class="puzzle-grid"></div>
+                    <button class="btn btn-primary mt-3" id="start-btn">Start Game</button>
+                </div>
+                
+                <button class="interactive-btn mt-3" id="startChallengeBtn">
+                    <i class="fas fa-play"></i> Start Challenge
+                </button>
+                <button class="interactive-btn mt-3 hidden" id="retryChallengeBtn">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            </div>
+            
+            <div class="form-grid">
+                <div>
+                    <label for="user-name"><i class="fas fa-user"></i> Your Name:</label>
+                    <input type="text" id="user-name" name="user-name" placeholder="John Doe" required>
+                </div>
+                <div>
+                    <label for="user-email"><i class="fas fa-envelope"></i> Your Email:</label>
+                    <input type="email" id="user-email" name="user-email" placeholder="john@example.com" required>
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div>
+                    <label for="user-college"><i class="fas fa-university"></i> College/Institution:</label>
+                    <input type="text" id="user-college" name="user-college" placeholder="University of Technology" required>
+                </div>
+                <div>
+                    <label for="user-phone"><i class="fas fa-phone"></i> Phone (Optional):</label>
+                    <input type="tel" id="user-phone" name="user-phone" placeholder="(123) 456-7890">
+                </div>
+            </div>
+            
+            <!-- New Student ID field -->
+            <div class="form-grid">
+                <div>
+                    <label for="student-id"><i class="fas fa-id-card"></i> Student ID:</label>
+                    <input type="text" id="student-id" name="student-id" placeholder="STU123456">
+                    <small class="form-text text-muted">Enter your student ID to unlock special offers</small>
+                </div>
+            </div>
+            
+            <label for="user-bio"><i class="fas fa-file-alt"></i> Brief Bio (Optional):</label>
+            <textarea id="user-bio" name="user-bio" placeholder="Tell us a bit about yourself..." rows="3"></textarea>
+
+            <button onclick="proceedToInput()">Continue <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <!-- Step 1: Course and Job Role Input -->
+        <div id="input-section" class="form-section hidden">
+            <h2><i class="fas fa-bullseye"></i> Your Career Goals</h2>
+            <div class="form-grid">
+                <div>
+                    <label for="course"><i class="fas fa-book"></i> Enrolled Course:</label>
+                    <input type="text" id="course" name="course" placeholder="Computer Science" required>
+                </div>
+                <div>
+                    <label for="job-role"><i class="fas fa-briefcase"></i> Desired Job Role:</label>
+                    <select id="job-role" name="job-role" required>
+                        <option value="">-- Select a Role --</option>
+                        <option value="Software Developer">Software Developer</option>
+                        <option value="SAP Consultant">SAP Consultant</option>
+                        <option value="SAP Developer">SAP Developer</option>
+                        <option value="ML Engineer">ML Engineer</option>
+                        <option value="Data Scientist">Data Scientist</option>
+                        <option value="Marketing Manager">Marketing Manager</option>
+                        <option value="Lawyer">Lawyer</option>
+                        <option value="Doctor">Doctor</option>
+                        <option value="UX Designer">UX Designer</option>
+                        <option value="Financial Analyst">Financial Analyst</option>
+                        <option value="Project Manager">Project Manager</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div>
+                    <label for="experience"><i class="fas fa-chart-line"></i> Years of Experience:</label>
+                    <select id="experience" name="experience" required>
+                        <option value="0-1">0-1 years</option>
+                        <option value="1-3">1-3 years</option>
+                        <option value="3-5">3-5 years</option>
+                        <option value="5+">5+ years</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="time-commitment"><i class="fas fa-clock"></i> Weekly Time Commitment:</label>
+                    <select id="time-commitment" name="time-commitment" required>
+                        <option value="1-5">1-5 hours</option>
+                        <option value="5-10">5-10 hours</option>
+                        <option value="10-20">10-20 hours</option>
+                        <option value="20+">20+ hours</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div>
+                    <label for="internship-interest"><i class="fas fa-building"></i> Interested in Internships?</label>
+                    <select id="internship-interest" name="internship-interest" required>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="maybe">Maybe</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="certification-interest"><i class="fas fa-certificate"></i> Interested in Certifications?</label>
+                    <select id="certification-interest" name="certification-interest" required>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="maybe">Maybe</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- SAP Learning Path Preview -->
+            <div class="sap-card mt-4">
+                <h3><i class="fas fa-graduation-cap"></i> SAP Learning Path</h3>
+                <div class="learning-path">
+                    <div class="learning-path-header">
+                        <h4>SAP S/4HANA Professional Certification</h4>
+                        <span class="badge bg-warning">Recommended</span>
+                    </div>
+                    <p>Master SAP S/4HANA with this comprehensive learning path tailored to your career goals</p>
+                    <div class="path-progress">
+                        <div class="path-progress-fill" id="pathProgress" style="width: 15%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>5 of 12 modules completed</span>
+                        <span>15%</span>
+                    </div>
+                    <button class="interactive-btn mt-3" onclick="viewLearningPath()">
+                        <i class="fas fa-book-open"></i> Continue Learning
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="startQuiz()">Start Skill Assessment <i class="fas fa-play"></i></button>
+        </div>
+
+        <!-- Step 2: Quiz Section -->
+        <div id="quiz-section" class="quiz-section hidden">
+            <h2><i class="fas fa-clipboard-list"></i> Skill Assessment</h2>
+            <p>Answer these questions to help us identify your skill gaps.</p>
+            <div id="quiz-questions">
+                <!-- Quiz questions will be loaded here by JavaScript -->
+            </div>
+            <button onclick="generateRoadmap()">Generate My Roadmap <i class="fas fa-road"></i></button>
+        </div>
+
+        <!-- Step 3: Roadmap Section -->
+        <div id="roadmap-section" class="roadmap-section hidden">
+            <h2><i class="fas fa-map-marked-alt"></i> Your Personalized Roadmap</h2>
+            <div id="roadmap-content"></div>
+            <button id="download-roadmap-btn">Download Roadmap <i class="fas fa-download"></i></button>
+            <button id="view-submissions-btn">View All Submissions <i class="fas fa-table"></i></button>
+            <div id="submissions-table" style="margin-top:20px;"></div>
+            
+            <!-- Student Offers Section -->
+            <div id="student-offers" class="student-offers">
+                <h3><i class="fas fa-gift"></i> Special Offers for Students</h3>
+                <div id="offers-container" class="mt-3">
+                    <!-- Offers will be loaded here -->
+                </div>
+            </div>
+            
+            <button id="roadmap-continue-btn" onclick="proceedToMentorship()">Continue to Mentorship <i class="fas fa-arrow-right"></i></button>
+            <button class="btn btn-success mt-3" id="startMentorshipBtn" onclick="openMentorshipChat()">Start AI Mentorship <i class="fas fa-robot"></i></button>
+        </div>
+
+        <!-- Step 4: Mentorship Section -->
+        <div id="mentorship-section" class="mentorship-section hidden">
+            <h2><i class="fas fa-hands-helping"></i> Mentorship Opportunities</h2>
+            <div id="mentorship-content">
+                <!-- Mentorship content will be loaded here by JavaScript -->
+            </div>
+            <button onclick="restartApp()">Finish & Restart <i class="fas fa-redo"></i></button>
+        </div>
+
+        <!-- Add personalized greeting -->
+        <div id="greeting" class="alert alert-info d-none" role="alert" style="margin-top: 10px;"></div>
+
+        <!-- Add this as the last step in your main container -->
+        <div class="card step" id="mentorship-step" style="display:none;" aria-label="AI Mentorship Chat" role="region">
+            <div class="step-header">
+                <h2 class="step-title"><i class="fas fa-robot"></i> AI Career Mentor</h2>
+                <p class="step-subtitle">Ask questions and get personalized career advice based on your skill gaps</p>
+            </div>
+            <div class="mentorship-chat">
+                <div class="chat-messages" id="chatMessages" style="height:300px;overflow-y:auto;background:#f9fbfd;border-radius:12px;padding:15px;margin-bottom:20px;border:1px solid #e9ecef;" aria-live="polite"></div>
+                <div class="chat-input" style="display:flex;gap:12px;">
+                    <input type="text" id="chatInput" class="form-control" placeholder="Ask about career advice, skill development, or job opportunities..." aria-label="Type your message to the AI mentor">
+                    <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
+                </div>
+            </div>
+            <div class="quick-replies mb-2" id="quickReplies"></div>
+            <div class="btn-group mt-3">
+                <button class="btn btn-outline-secondary" onclick="showStep('roadmap-step')"><i class="fas fa-arrow-left"></i> Back to Roadmap</button>
+                <button class="btn btn-outline-secondary" onclick="restartApp()"><i class="fas fa-redo"></i> Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Game State Management
+        class GameState {
+            constructor() {
+                this.player = {
+                    name: 'Skill Explorer',
+                    level: 1,
+                    xp: 0,
+                    maxXP: 100,
+                    achievements: [],
+                    streak: 0,
+                    completedSkills: [],
+                    currentSection: 'home'
+                };
+                this.sap = {
+                    certifications: [],
+                    badges: ['SAP Explorer', 'Cloud Expert'],
+                    projectsCompleted: 0,
+                    dailyChallengeCompleted: false,
+                    learningPathProgress: 15
+                };
+                this.loadState();
+            }
+
+            saveState() {
+                try {
+                    const gameData = {
+                        player: this.player,
+                        sap: this.sap,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('skillSprintGameState', JSON.stringify(gameData));
+                } catch (error) {
+                    console.error('Failed to save game state:', error);
+                }
+            }
+
+            loadState() {
+                try {
+                    const savedState = localStorage.getItem('skillSprintGameState');
+                    if (savedState) {
+                        const gameData = JSON.parse(savedState);
+                        this.player = gameData.player;
+                        this.sap = gameData.sap || {
+                            certifications: [],
+                            badges: ['SAP Explorer', 'Cloud Expert'],
+                            projectsCompleted: 0,
+                            dailyChallengeCompleted: false,
+                            learningPathProgress: 15
+                        };
+                    }
+                } catch (error) {
+                    console.error('Failed to load game state:', error);
+                }
+            }
+
+            addXP(amount) {
+                this.player.xp += amount;
+                if (this.player.xp >= this.player.maxXP) {
+                    this.levelUp();
+                }
+                this.updatePlayerStats();
+                this.saveState();
+            }
+
+            levelUp() {
+                this.player.level++;
+                this.player.xp = this.player.xp - this.player.maxXP;
+                this.player.maxXP = Math.floor(this.player.maxXP * 1.5);
+                this.showAchievement(`Level Up! You're now Level ${this.player.level}!`);
+                this.updatePlayerStats();
+            }
+
+            unlockAchievement(title, description) {
+                const achievementId = title.replace(/\s+/g, '-').toLowerCase();
+                if (!this.player.achievements.includes(achievementId)) {
+                    this.player.achievements.push(achievementId);
+                    this.showAchievement(title, description);
+                    this.addXP(50);
+                    return true;
+                }
+                return false;
+            }
+
+            showAchievement(title, description = "") {
+                const popup = document.getElementById('achievementPopup');
+                const textEl = document.getElementById('achievementText');
+                textEl.textContent = title + (description ? `: ${description}` : '');
+                popup.classList.remove('d-none');
+                
+                // Play achievement sound
+                this.playAchievementSound();
+                
+                setTimeout(() => {
+                    popup.classList.add('d-none');
+                }, 3000);
+            }
+
+            playAchievementSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2);
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                } catch (error) {
+                    console.log('Audio not available');
+                }
+            }
+
+            updatePlayerStats() {
+                document.getElementById('playerName').textContent = this.player.name;
+                document.getElementById('playerLevel').textContent = this.player.level;
+                document.getElementById('playerXP').textContent = this.player.xp;
+                document.getElementById('achievements').textContent = this.player.achievements.length;
+                document.getElementById('streak').textContent = this.player.streak;
+                
+                const xpPercentage = (this.player.xp / this.player.maxXP) * 100;
+                document.getElementById('xpFill').style.width = `${xpPercentage}%`;
+            }
+        }
+
+        // Initialize Game State
+        const gameState = new GameState();
+
+        // Enhanced career data with SAP Integration
+        const jobData = {
+            "Software Developer": {
+                skills: ["Programming (e.g., Python, Java, JavaScript)", "Data Structures & Algorithms", "Databases (SQL/NoSQL)", "Version Control (Git)", "Testing", "Problem Solving", "Communication", "System Design"],
+                sapSkills: ["SAP HANA", "SAP UI5", "ABAP", "SAP Cloud Platform"],
+                quiz: [
+                    { question: "What is the time complexity of searching in a balanced binary search tree?", options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"], answer: "O(log n)", relatedSkill: "Data Structures & Algorithms" },
+                    { question: "In SAP development, what is ABAP primarily used for?", options: ["Frontend development", "Database queries", "Business logic programming", "Network configuration"], answer: "Business logic programming", relatedSkill: "ABAP" },
+                    { question: "What is a primary key in a database?", options: ["A unique identifier for a record", "A foreign key", "An index", "A table name"], answer: "A unique identifier for a record", relatedSkill: "Databases (SQL/NoSQL)" },
+                    { question: "Which SAP technology is best for building responsive web applications?", options: ["SAP GUI", "SAP UI5", "SAP Crystal Reports", "SAP BusinessObjects"], answer: "SAP UI5", relatedSkill: "SAP UI5" },
+                    { question: "What is the main advantage of using SAP HANA?", options: ["Lower cost", "In-memory computing", "Better graphics", "Easier installation"], answer: "In-memory computing", relatedSkill: "SAP HANA" }
+                ],
+                roadmap: {
+                    skillGaps: (gaps) => `Focus on strengthening your skills in: ${gaps.join(', ')}.`,
+                    howToCover: (gaps) => `To cover these gaps, consider online courses (Coursera, Udemy, edX), coding challenges (LeetCode, HackerRank), building personal projects, and contributing to open source.`,
+                    internshipCert: (internship, cert) => {
+                        let suggestions = [];
+                        if (internship === 'yes' || internship === 'maybe') suggestions.push("Look for internships at tech companies to gain practical experience.");
+                        if (cert === 'yes' || cert === 'maybe') suggestions.push("Consider SAP certifications like SAP Certified Development Associate or SAP HANA Application Associate.");
+                        return suggestions.length > 0 ? suggestions.join(' ') : "Consider gaining practical experience and potentially pursuing relevant certifications.";
+                    },
+                    aiMentorship: "Explore AI-powered coding assistants (like GitHub Copilot) and online communities for continuous learning and mentorship."
+                },
+                mentorshipContent: (gaps) => {
+                    let content = "<p>Based on your assessment and interest, here's some guidance on the skills identified for improvement:</p>";
+                    if (gaps.length > 0 && gaps[0] !== "Based on the quiz, your foundational knowledge seems good.") {
+                        content += "<ul>";
+                        gaps.forEach(gap => {
+                            if (gap.includes("Data Structures & Algorithms")) {
+                                content += `<li><strong>Data Structures & Algorithms:</strong> Focus on understanding common data structures (arrays, linked lists, trees, graphs) and algorithm design techniques. Practice coding problems on platforms like LeetCode or HackerRank.</li>`;
+                            } else if (gap.includes("SAP")) {
+                                content += `<li><strong>SAP Development:</strong> Deepen your SAP skills through SAP Learning Hub resources and hands-on practice with SAP Cloud Platform.</li>`;
+                            } else {
+                                content += `<li><strong>${gap}:</strong> Review fundamental concepts in this area. Consult online resources, documentation, or tutorials.</li>`;
+                            }
+                        });
+                         content += "</ul>";
+                    } else {
+                         content += "<p>Your foundational knowledge seems strong! Continue practicing and building projects to solidify your skills.</p>";
+                    }
+                    content += "<p>Remember to seek out mentors, join developer communities, and keep building!</p>";
+                    return content;
+                }
+            },
+            "Lawyer": {
+    skills: ["Legal Research", "Case Analysis", "Oral Advocacy", "Legal Writing", "Negotiation", "Client Counseling"],
+    sapSkills: [],
+    quiz: [
+        {
+            question: "Which of the following is a primary source of law?",
+            options: ["Law journal", "Case law", "Legal blog", "Legal dictionary"],
+            answer: "Case law",
+            relatedSkill: "Legal Research"
+        },
+        {
+            question: "What is the first step in preparing for litigation?",
+            options: ["Filing a complaint", "Drafting a contract", "Client counseling", "Pre-trial motions"],
+            answer: "Client counseling",
+            relatedSkill: "Client Counseling"
+        },
+        {
+            question: "What is a 'brief' in legal practice?",
+            options: ["A court decision", "A client's letter", "A summary of arguments", "An evidence log"],
+            answer: "A summary of arguments",
+            relatedSkill: "Legal Writing"
+        },
+        {
+            question: "Which skill is essential for cross-examination?",
+            options: ["Graphic design", "Oral Advocacy", "Spreadsheet analysis", "Backend coding"],
+            answer: "Oral Advocacy",
+            relatedSkill: "Oral Advocacy"
+        },
+        {
+            question: "When negotiating a settlement, the lawyer should prioritize:",
+            options: ["Client's best interest", "Firm's publicity", "Maximum billable hours", "Least resistance"],
+            answer: "Client's best interest",
+            relatedSkill: "Negotiation"
+        }
+    ],
+    roadmap: {
+        skillGaps: (gaps) => `You should work on: ${gaps.join(', ')}.`,
+        howToCover: (gaps) => `Take mock trials, join debate or mooting societies, use platforms like Coursera or Harvard Law Online to upskill in ${gaps.join(', ')}.`,
+        internshipCert: (internship, cert) => {
+            let suggestions = [];
+            if (internship === 'yes' || internship === 'maybe') suggestions.push("Apply to legal internships at law firms or NGOs.");
+            if (cert === 'yes' || cert === 'maybe') suggestions.push("Pursue certifications in Cyberlaw, Intellectual Property, or Contract Drafting.");
+            return suggestions.length ? suggestions.join(' ') : "Keep enhancing your legal profile with real-world experience.";
+        },
+        aiMentorship: "Use tools like Casetext, LawDroid, and AI case summarizers. Also consider mentorship via Bar Council initiatives."
+    },
+    mentorshipContent: (gaps) => {
+        let content = "<p>Here's how to improve based on the skills you need:</p><ul>";
+        gaps.forEach(gap => {
+            content += `<li><strong>${gap}:</strong> Practice through moot courts, writing case briefs, and taking legal reasoning assessments.</li>`;
+        });
+        content += "</ul><p>Connect with senior advocates and join local bar associations for guidance.</p>";
+        return content;
+    }
+},
+            "SAP Consultant": {
+                skills: ["SAP Modules", "Business Process", "Configuration", "Integration", "Project Management", "SAP S/4HANA", "SAP Fiori"],
+                sapSkills: ["SAP S/4HANA", "SAP SuccessFactors", "SAP Concur", "SAP Ariba", "SAP Cloud"],
+                quiz: [
+                    { question: "What is the main difference between SAP ECC and SAP S/4HANA?", options: ["User interface only", "In-memory database", "Programming language", "Operating system"], answer: "In-memory database", relatedSkill: "SAP S/4HANA" },
+                    { question: "Which SAP module handles human resources management?", options: ["SAP MM", "SAP FI", "SAP HR/HCM", "SAP SD"], answer: "SAP HR/HCM", relatedSkill: "SAP Modules" },
+                    { question: "What is the purpose of SAP Fiori?", options: ["Database management", "User experience design", "Network security", "Data backup"], answer: "User experience design", relatedSkill: "SAP Fiori" },
+                    { question: "What does SAP MM stand for?", options: ["Material Management", "Marketing Management", "Money Management", "Manufacturing Management"], answer: "Material Management", relatedSkill: "SAP Modules" },
+                    { question: "What is the 'discovery' phase in SAP implementation?", options: ["The trial phase", "The process where parties exchange information", "The requirements gathering phase", "The training phase"], answer: "The requirements gathering phase", relatedSkill: "Project Management" }
+                ],
+                roadmap: {
+                    skillGaps: (gaps) => `Focus on strengthening your skills in: ${gaps.join(', ')}.`,
+                    howToCover: (gaps) => `To cover these gaps, take specialized SAP courses on platforms like openSAP, participate in SAP community events, and gain hands-on experience through SAP sandbox environments.`,
+                    internshipCert: (internship, cert) => {
+                        let suggestions = [];
+                        if (internship === 'yes' || internship === 'maybe') suggestions.push("Seek SAP consulting internships at implementation partners or enterprise organizations.");
+                        if (cert === 'yes' || cert === 'maybe') suggestions.push("Consider SAP certifications like SAP Certified Application Associate or SAP Certified Development Associate.");
+                        return suggestions.length > 0 ? suggestions.join(' ') : "Consider gaining practical SAP experience and pursuing SAP certifications.";
+                    },
+                    aiMentorship: "Utilize SAP's AI capabilities in SAP Analytics Cloud and connect with mentors through SAP Community Network."
+                },
+                mentorshipContent: (gaps) => {
+                    let content = "<p>Based on your assessment and interest in SAP consulting, here's some guidance:</p>";
+                    if (gaps.length > 0 && gaps[0] !== "Based on the quiz, your foundational knowledge seems good.") {
+                        content += "<ul>";
+                        gaps.forEach(gap => {
+                            if (gap.includes("SAP Modules")) {
+                                content += `<li><strong>SAP Modules:</strong> Deepen your knowledge of core SAP modules (FI, CO, MM, SD, PP) through SAP Learning Hub courses and real-world scenarios.</li>`;
+                            } else if (gap.includes("SAP S/4HANA")) {
+                                content += `<li><strong>SAP S/4HANA:</strong> Master the concepts of SAP's next-generation ERP suite, including migration paths and new functionalities.</li>`;
+                            } else if (gap.includes("Integration")) {
+                                content += `<li><strong>Integration:</strong> Learn how to integrate SAP with other systems using middleware solutions like SAP PI/PO or SAP Cloud Platform Integration.</li>`;
+                            } else {
+                                content += `<li><strong>${gap}:</strong> Review fundamental concepts in this area. Consult SAP documentation and community resources.</li>`;
+                            }
+                        });
+                         content += "</ul>";
+                    } else {
+                         content += "<p>Your foundational SAP knowledge seems strong! Focus on developing specialized expertise and practical implementation skills.</p>";
+                    }
+                    content += "<p>Connect with SAP mentors and participate in SAP Community events to advance your career!</p>";
+                    return content;
+                }
+            },
+            "SAP Developer": {
+                skills: ["ABAP", "SAP UI5", "SAP Fiori", "SAP HANA", "OData Services", "SAP BTP", "Integration"],
+                sapSkills: ["ABAP OO", "CDS Views", "SAP Fiori Elements", "SAP Cloud Application Programming Model"],
+                quiz: [
+                    { question: "What programming language is primarily used in traditional SAP development?", options: ["Java", "Python", "ABAP", "JavaScript"], answer: "ABAP", relatedSkill: "ABAP" },
+                    { question: "Which technology is used to build modern SAP user interfaces?", options: ["SAP GUI", "SAP UI5", "SAP BusinessObjects", "SAP Crystal Reports"], answer: "SAP UI5", relatedSkill: "SAP UI5" },
+                    { question: "What is the purpose of CDS (Core Data Services) in SAP?", options: ["User interface design", "Data modeling and access", "Network configuration", "Security management"], answer: "Data modeling and access", relatedSkill: "CDS Views" },
+                    { question: "Which protocol is commonly used for data exchange between SAP systems and external applications?", options: ["HTTP", "FTP", "OData", "SMTP"], answer: "OData", relatedSkill: "OData Services" },
+                    { question: "What is SAP BTP?", options: ["Business Transaction Processing", "Business Technology Platform", "Basic Transaction Protocol", "Business Transformation Platform"], answer: "Business Technology Platform", relatedSkill: "SAP BTP" }
+                ],
+                roadmap: {
+                    skillGaps: (gaps) => `Focus on strengthening your skills in: ${gaps.join(', ')}.`,
+                    howToCover: (gaps) => `To cover these gaps, take SAP development courses on openSAP, practice with SAP Cloud Platform trial accounts, and contribute to open-source SAP projects.`,
+                    internshipCert: (internship, cert) => {
+                        let suggestions = [];
+                        if (internship === 'yes' || internship === 'maybe') suggestions.push("Seek SAP development internships to gain practical experience with real SAP projects.");
+                        if (cert === 'yes' || cert === 'maybe') suggestions.push("Consider SAP certifications like SAP Certified Development Associate - ABAP with SAP NetWeaver or SAP Certified Development Associate - SAP Fiori Application Developer.");
+                        return suggestions.length > 0 ? suggestions.join(' ') : "Consider gaining practical SAP development experience and pursuing SAP certifications.";
+                    },
+                    aiMentorship: "Explore SAP AI services on SAP BTP and join SAP developer communities for peer learning."
+                },
+                mentorshipContent: (gaps) => {
+                    let content = "<p>Based on your assessment and interest in SAP development, here's some guidance:</p>";
+                    if (gaps.length > 0 && gaps[0] !== "Based on the quiz, your foundational knowledge seems good.") {
+                        content += "<ul>";
+                        gaps.forEach(gap => {
+                            if (gap.includes("ABAP")) {
+                                content += `<li><strong>ABAP:</strong> Master both classic and object-oriented ABAP programming. Focus on performance optimization and modern ABAP techniques.</li>`;
+                            } else if (gap.includes("SAP UI5")) {
+                                content += `<li><strong>SAP UI5/Fiori:</strong> Develop proficiency in building responsive SAP applications using SAPUI5 and Fiori design principles.</li>`;
+                            } else if (gap.includes("SAP HANA")) {
+                                content += `<li><strong>SAP HANA:</strong> Learn to leverage SAP HANA's in-memory capabilities for high-performance applications.</li>`;
+                            } else {
+                                content += `<li><strong>${gap}:</strong> Review fundamental concepts in this area. Consult SAP development documentation.</li>`;
+                            }
+                        });
+                         content += "</ul>";
+                    } else {
+                         content += "<p>Your foundational SAP development knowledge seems strong! Focus on mastering advanced topics and cloud-native development with SAP BTP.</p>";
+                    }
+                    content += "<p>Connect with experienced SAP developers through SAP Community and local user groups!</p>";
+                    return content;
+                }
+            },
+            // ... other job roles ...
+        };
+
+        // Global state
+        const state = {
+            currentStep: 0,
+            userData: {},
+            selectedJobRole: "",
+            quizAnswers: [],
+            skillGaps: [],
+            studentOffers: []
+        };
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progress-bar');
+            const steps = document.querySelectorAll('.progress-steps span');
+            
+            // Reset all steps
+            steps.forEach(step => {
+                step.style.color = 'white';
+                step.style.fontWeight = 'normal';
+            });
+            
+            // Highlight current step
+            if (steps[state.currentStep]) {
+                steps[state.currentStep].style.color = '#ffd700';
+                steps[state.currentStep].style.fontWeight = 'bold';
+            }
+            
+            // Update progress bar width
+            const progressPercentage = (state.currentStep / 4) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+
+        // Proceed to input section
+        function proceedToInput() {
+            // Save user data
+            state.userData = {
+                name: document.getElementById('user-name').value,
+                email: document.getElementById('user-email').value,
+                college: document.getElementById('user-college').value,
+                phone: document.getElementById('user-phone').value,
+                studentId: document.getElementById('student-id').value,
+                bio: document.getElementById('user-bio').value
+            };
+            
+            // Set player name
+            gameState.player.name = state.userData.name;
+            gameState.updatePlayerStats();
+            
+            // Award XP for completing profile
+            gameState.addXP(25);
+            gameState.unlockAchievement("First Steps", "Completed your profile setup");
+            
+            // Hide home section, show input section
+            document.getElementById('home-section').classList.add('hidden');
+            document.getElementById('input-section').classList.remove('hidden');
+            
+            // Update state and progress
+            state.currentStep = 1;
+            updateProgressBar();
+        }
+
+        // Start the quiz
+        function startQuiz() {
+            // Get selected job role
+            const jobRoleSelect = document.getElementById('job-role');
+            state.selectedJobRole = jobRoleSelect.value;
+            
+            // Save additional user data
+            state.userData.course = document.getElementById('course').value;
+            state.userData.experience = document.getElementById('experience').value;
+            state.userData.timeCommitment = document.getElementById('time-commitment').value;
+            state.userData.internshipInterest = document.getElementById('internship-interest').value;
+            state.userData.certificationInterest = document.getElementById('certification-interest').value;
+            
+            // Award XP for selecting career path
+            gameState.addXP(20);
+            
+            // Hide input section, show quiz section
+            document.getElementById('input-section').classList.add('hidden');
+            document.getElementById('quiz-section').classList.remove('hidden');
+            
+            // Load quiz questions
+            loadQuizQuestions();
+            
+            // Update state and progress
+            state.currentStep = 2;
+            updateProgressBar();
+        }
+
+        // Load quiz questions
+        function loadQuizQuestions() {
+            const quizContainer = document.getElementById('quiz-questions');
+            quizContainer.innerHTML = '';
+            
+            const job = jobData[state.selectedJobRole];
+            
+            job.quiz.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                
+                const questionHTML = `
+                    <p>${index + 1}. ${q.question}</p>
+                    ${q.options.map((opt, optIndex) => `
+                        <label>
+                            <input type="radio" name="q${index}" value="${optIndex}" required>
+                            ${opt}
+                        </label>
+                    `).join('')}
+                `;
+                
+                questionDiv.innerHTML = questionHTML;
+                quizContainer.appendChild(questionDiv);
+            });
+        }
+
+        // Generate roadmap
+        function generateRoadmap() {
+            // Collect quiz answers
+            state.quizAnswers = [];
+            const job = jobData[state.selectedJobRole];
+            state.skillGaps = [];
+            
+            // Check answers and identify skill gaps
+            job.quiz.forEach((q, index) => {
+                const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selectedOption) {
+                    const selectedAnswer = q.options[parseInt(selectedOption.value)];
+                    const isCorrect = selectedAnswer === q.answer;
+                    
+                    if (!isCorrect) {
+                        state.skillGaps.push(q.relatedSkill);
+                    }
+                    
+                    state.quizAnswers.push({
+                        question: q.question,
+                        selectedAnswer: selectedAnswer,
+                        correctAnswer: q.answer,
+                        isCorrect: isCorrect,
+                        relatedSkill: q.relatedSkill
+                    });
+                }
+            });
+            
+            // Remove duplicate skill gaps
+            state.skillGaps = [...new Set(state.skillGaps)];
+            
+            // If no skill gaps found
+            if (state.skillGaps.length === 0) {
+                state.skillGaps = ["Based on the quiz, your foundational knowledge seems good. Focus on advanced topics and practical application."];
+            }
+            
+            // Award XP for completing assessment
+            gameState.addXP(30);
+            gameState.unlockAchievement("Skill Assessor", "Completed your skills assessment");
+            
+            // Hide quiz section, show roadmap section
+            document.getElementById('quiz-section').classList.add('hidden');
+            document.getElementById('roadmap-section').classList.remove('hidden');
+            document.getElementById('roadmap-continue-btn').classList.remove('hidden');
+            
+            // Generate roadmap content
+            generateRoadmapContent();
+            
+            // Generate student offers
+            generateStudentOffers();
+            
+            // Submit data to backend
+            submitToServer();
+            
+            // Update state and progress
+            state.currentStep = 3;
+            updateProgressBar();
+            
+            // Trigger confetti animation
+            triggerConfetti();
+        }
+
+        // Submit user data to backend
+        function submitToServer() {
+            const userData = {
+                ...state.userData,
+                jobRole: state.selectedJobRole,
+                course: state.userData.course,
+                xp: gameState.player.xp,
+                achievements: gameState.player.achievements.length,
+                streak: gameState.player.streak
+            };
+
+            // Check if backend is connected
+            if (!window.backendConnected) {
+                showToast('Backend not connected. Running in offline mode.', 'warning');
+                showToast('Your roadmap has been generated successfully!', 'success');
+                return;
+            }
+
+            // Show loading spinner
+            document.getElementById('spinnerOverlay').style.display = 'flex';
+
+            fetch('/api/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                // Hide loading spinner
+                document.getElementById('spinnerOverlay').style.display = 'none';
+                
+                if (data.success) {
+                    showToast('Submission successful! Check your email for personalized offers.', 'success');
+                    console.log('Offers sent:', data.offers);
+                    
+                    // Update offers with backend data if available
+                    if (data.offers && data.offers.length > 0) {
+                        updateOffersWithBackendData(data.offers);
+                    }
+                } else {
+                    showToast('Something went wrong. Please try again.', 'danger');
+                }
+            })
+            .catch(err => {
+                // Hide loading spinner
+                document.getElementById('spinnerOverlay').style.display = 'none';
+                console.error('Error:', err);
+                
+                // Handle offline mode gracefully
+                if (err.name === 'TypeError' && err.message.includes('fetch')) {
+                    showToast('Backend server not available. Running in offline mode.', 'warning');
+                    // Still show the roadmap and offers, just without email functionality
+                    showToast('Your roadmap has been generated successfully!', 'success');
+                } else {
+                    showToast('Server error. Please check your connection.', 'danger');
+                }
+            });
+        }
+
+        // Update offers with backend data
+        function updateOffersWithBackendData(backendOffers) {
+            const offersContainer = document.getElementById('offers-container');
+            offersContainer.innerHTML = '';
+            
+            backendOffers.forEach(offer => {
+                const offerHTML = `
+                    <div class="offer-card">
+                        <h4><i class="fas fa-gift"></i> ${offer.title}</h4>
+                        <p>${offer.description}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-warning">${offer.discount}</span>
+                            <span><strong>Code:</strong> ${offer.code}</span>
+                        </div>
+                    </div>
+                `;
+                offersContainer.innerHTML += offerHTML;
+            });
+        }
+
+        // Generate roadmap content
+        function generateRoadmapContent() {
+            const roadmapContent = document.getElementById('roadmap-content');
+            const job = jobData[state.selectedJobRole];
+            
+            // Add skill visualization
+            let skillVisualizationHTML = '<div class="skill-visualization"><h3><i class="fas fa-chart-bar"></i> Skill Analysis</h3>';
+            
+            job.skills.forEach(skill => {
+                const gap = state.skillGaps.includes(skill) ? 40 : 80;
+                skillVisualizationHTML += `
+                    <div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>${skill}</span>
+                            <span>${gap}%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-level" style="width: ${gap}%;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            skillVisualizationHTML += '</div>';
+            
+            // SAP Certification Milestones
+            let sapCerts = '';
+            if (job.sapSkills && job.sapSkills.length > 0) {
+                sapCerts = `
+                    <div class="sap-card mt-4">
+                        <h3><i class="fas fa-certificate"></i> SAP Certification Milestones</h3>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>SAP Certified Associate - ${state.selectedJobRole}</span>
+                                <span class="badge bg-warning">Q3 Target</span>
+                            </div>
+                            <div class="progress mb-4" style="height: 10px;">
+                                <div class="progress-bar" style="width: 40%"></div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>SAP Certified Specialist - SAP Analytics Cloud</span>
+                                <span class="badge bg-info">Q4 Target</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar" style="width: 15%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const roadmapHTML = `
+                <h3><i class="fas fa-user"></i> User Profile</h3>
+                <p><strong>Name:</strong> ${state.userData.name}</p>
+                <p><strong>Course:</strong> ${state.userData.course}</p>
+                <p><strong>Desired Role:</strong> ${state.selectedJobRole}</p>
+                <p><strong>Experience:</strong> ${state.userData.experience}</p>
+                
+                <h3><i class="fas fa-exclamation-triangle"></i> Identified Skill Gaps</h3>
+                <p>${job.roadmap.skillGaps(state.skillGaps)}</p>
+                
+                ${skillVisualizationHTML}
+                
+                <h3><i class="fas fa-lightbulb"></i> Learning Recommendations</h3>
+                <p>${job.roadmap.howToCover(state.skillGaps)}</p>
+                
+                <h3><i class="fas fa-briefcase"></i> Career Development</h3>
+                <p>${job.roadmap.internshipCert(state.userData.internshipInterest, state.userData.certificationInterest)}</p>
+                
+                <h3><i class="fas fa-robot"></i> AI & Mentorship Opportunities</h3>
+                <p>${job.roadmap.aiMentorship}</p>
+                
+                ${sapCerts}
+                
+                <h3><i class="fas fa-calendar-alt"></i> Suggested Learning Timeline</h3>
+                <ul>
+                    <li><strong>Month 1:</strong> Focus on core foundational skills through online courses</li>
+                    <li><strong>Month 2:</strong> Apply knowledge through small projects and exercises</li>
+                    <li><strong>Month 3:</strong> Work on a comprehensive project showcasing your skills</li>
+                    <li><strong>Ongoing:</strong> Participate in communities, attend meetups, and seek mentorship</li>
+                </ul>
+            `;
+            
+            roadmapContent.innerHTML = roadmapHTML;
+            document.getElementById('startMentorshipBtn').style.display = 'block';
+            
+            // Animate skill bars
+            setTimeout(() => {
+                document.querySelectorAll('.skill-level').forEach(bar => {
+                    bar.style.width = bar.style.width;
+                });
+            }, 100);
+        }
+        
+        // Generate student offers
+        function generateStudentOffers() {
+            const offersContainer = document.getElementById('offers-container');
+            offersContainer.innerHTML = '';
+            
+            // Always include base offers
+            state.studentOffers = [
+                {
+                    title: "SAP Learning Hub Access",
+                    description: "Free 30-day access to SAP Learning Hub",
+                    discount: "100% off",
+                    code: "STUDENTHUB30",
+                    icon: "fas fa-book"
+                },
+                {
+                    title: "Certification Discount",
+                    description: "25% off on SAP certification exams",
+                    discount: "25% off",
+                    code: "CERTSTUDENT25",
+                    icon: "fas fa-certificate"
+                }
+            ];
+            
+            // Add XP-based offers
+            if (gameState.player.xp > 50) {
+                state.studentOffers.push({
+                    title: "Advanced Course Bundle",
+                    description: "Special discount on advanced courses",
+                    discount: "20% off",
+                    code: `XP${gameState.player.xp}`,
+                    icon: "fas fa-graduation-cap"
+                });
+            }
+            
+            // Add achievement-based offers
+            if (gameState.player.achievements.length > 2) {
+                state.studentOffers.push({
+                    title: "Mentorship Session",
+                    description: "Free 1:1 mentorship session with industry expert",
+                    discount: "100% off",
+                    code: `ACHIEVE${gameState.player.achievements.length}`,
+                    icon: "fas fa-user-graduate"
+                });
+            }
+            
+            // Add streak-based offers
+            if (gameState.player.streak > 5) {
+                state.studentOffers.push({
+                    title: "Study Materials",
+                    description: "Free access to premium study materials",
+                    discount: "100% off",
+                    code: `STREAK${gameState.player.streak}`,
+                    icon: "fas fa-book-open"
+                });
+            }
+            
+            // Render offers
+            state.studentOffers.forEach(offer => {
+                const offerHTML = `
+                    <div class="offer-card">
+                        <h4><i class="${offer.icon}"></i> ${offer.title}</h4>
+                        <p>${offer.description}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-warning">${offer.discount}</span>
+                            <span><strong>Code:</strong> ${offer.code}</span>
+                        </div>
+                    </div>
+                `;
+                offersContainer.innerHTML += offerHTML;
+            });
+        }
+
+        // Proceed to mentorship section
+        function proceedToMentorship() {
+            // Hide roadmap section, show mentorship section
+            document.getElementById('roadmap-section').classList.add('hidden');
+            document.getElementById('mentorship-section').classList.remove('hidden');
+            
+            // Generate mentorship content
+            generateMentorshipContent();
+            
+            // Award XP for reaching mentorship
+            gameState.addXP(20);
+            
+            // Submit data to backend
+            submitToBackend();
+            
+            // Update state and progress
+            state.currentStep = 4;
+            updateProgressBar();
+        }
+        
+        // Submit data to backend
+        function submitToBackend() {
+            // Call the actual server submission function
+            submitToServer();
+        }
+
+        // Generate mentorship content
+        function generateMentorshipContent() {
+            const mentorshipContent = document.getElementById('mentorship-content');
+            const job = jobData[state.selectedJobRole];
+            
+            const mentorshipHTML = `
+                <p>Based on your career goals and identified skill gaps, we've matched you with potential mentors:</p>
+                
+                <div class="mentor-card">
+                    <div class="mentor-avatar">JD</div>
+                    <div class="mentor-info">
+                        <div class="mentor-name">Jane Doe</div>
+                        <div class="mentor-title">Senior ${state.selectedJobRole} at TechCorp</div>
+                        <div class="mentor-bio">10+ years of experience in the field. Specialized in ${state.skillGaps.length > 0 ? state.skillGaps[0] : job.skills[0]}.</div>
+                        <div class="mentor-contact">
+                            <a href="#" class="contact-btn email-btn"><i class="fas fa-envelope"></i> Send Message</a>
+                            <a href="#" class="contact-btn schedule-btn"><i class="fas fa-calendar-check"></i> Schedule Session</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mentor-card">
+                    <div class="mentor-avatar">MS</div>
+                    <div class="mentor-info">
+                        <div class="mentor-name">Michael Smith</div>
+                        <div class="mentor-title">${state.selectedJobRole} Team Lead at Innovate Inc</div>
+                        <div class="mentor-bio">Industry expert with focus on mentorship and career development.</div>
+                        <div class="mentor-contact">
+                            <a href="#" class="contact-btn email-btn"><i class="fas fa-envelope"></i> Send Message</a>
+                            <a href="#" class="contact-btn schedule-btn"><i class="fas fa-calendar-check"></i> Schedule Session</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3><i class="fas fa-graduation-cap"></i> Skill Development Guidance</h3>
+                ${job.mentorshipContent ? job.mentorshipContent(state.skillGaps) : ''}
+                
+                <h3><i class="fas fa-users"></i> Community Recommendations</h3>
+                <ul>
+                    <li>Join ${state.selectedJobRole} communities on LinkedIn and Reddit</li>
+                    <li>Attend local meetups and industry conferences</li>
+                    <li>Participate in online forums and discussion groups</li>
+                    <li>Contribute to open-source projects related to your field</li>
+                </ul>
+                
+                <h3><i class="fas fa-book"></i> Recommended Learning Resources</h3>
+                <ul>
+                    <li><strong>Books:</strong> "The Complete Professional" by Alex Johnson, "Mastering ${state.selectedJobRole}" by Sarah Williams</li>
+                    <li><strong>Courses:</strong> Advanced ${state.selectedJobRole} Specialization on Coursera, ${state.selectedJobRole} Certification Prep on Udemy</li>
+                    <li><strong>Podcasts:</strong> "The ${state.selectedJobRole} Journey", "Career Growth Daily"</li>
+                </ul>
+            `;
+            
+            mentorshipContent.innerHTML = mentorshipHTML;
+        }
+
+        // Restart the application
+        function restartApp() {
+            // Reset state
+            state.currentStep = 0;
+            state.userData = {};
+            state.selectedJobRole = "";
+            state.quizAnswers = [];
+            state.skillGaps = [];
+            state.studentOffers = [];
+            
+            // Reset form
+            document.getElementById('user-name').value = '';
+            document.getElementById('user-email').value = '';
+            document.getElementById('user-college').value = '';
+            document.getElementById('user-phone').value = '';
+            document.getElementById('student-id').value = '';
+            document.getElementById('user-bio').value = '';
+            document.getElementById('course').value = '';
+            document.getElementById('job-role').value = '';
+            document.getElementById('experience').value = '0-1';
+            document.getElementById('time-commitment').value = '1-5';
+            document.getElementById('internship-interest').value = 'yes';
+            document.getElementById('certification-interest').value = 'yes';
+            
+            // Show home section, hide others
+            document.getElementById('mentorship-section').classList.add('hidden');
+            document.getElementById('home-section').classList.remove('hidden');
+            
+            // Update progress bar
+            updateProgressBar();
+        }
+
+        // Confetti animation
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const confetti = [];
+            const confettiCount = 150;
+            const gravity = 0.5;
+            const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+            
+            for (let i = 0; i < confettiCount; i++) {
+                confetti.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * -canvas.height,
+                    width: Math.random() * 10 + 5,
+                    height: Math.random() * 10 + 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speed: Math.random() * 3 + 2,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 10 - 5
+                });
+            }
+            
+            function drawConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                confetti.forEach((conf, i) => {
+                    ctx.save();
+                    ctx.translate(conf.x, conf.y);
+                    ctx.rotate(conf.rotation * Math.PI / 180);
+                    ctx.fillStyle = conf.color;
+                    ctx.fillRect(-conf.width/2, -conf.height/2, conf.width, conf.height);
+                    ctx.restore();
+                    
+                    // Update position
+                    conf.y += conf.speed;
+                    conf.rotation += conf.rotationSpeed;
+                    
+                    // Reset confetti when it goes off screen
+                    if (conf.y > canvas.height) {
+                        conf.y = -conf.height;
+                        conf.x = Math.random() * canvas.width;
+                    }
+                });
+                
+                requestAnimationFrame(drawConfetti);
+            }
+            
+            drawConfetti();
+            
+            // Stop after 5 seconds
+            setTimeout(() => {
+                canvas.width = 0;
+                canvas.height = 0;
+            }, 5000);
+        }
+
+        // Dark mode toggle
+        document.getElementById('darkModeToggle').onclick = function() {
+            document.body.classList.toggle('dark-mode');
+            this.innerHTML = document.body.classList.contains('dark-mode') ? 
+                '<i class="fas fa-sun"></i> Light Mode' : 
+                '<i class="fas fa-moon"></i> Dark Mode';
+        };
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toastId = 'toast' + Date.now();
+            const toastHtml = `<div id="${toastId}" class="toast align-items-center text-bg-${type} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>`;
+            document.getElementById('toastContainer').insertAdjacentHTML('beforeend', toastHtml);
+            const toastEl = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+            toast.show();
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        }
+
+        // Initialize progress bar
+        updateProgressBar();
+
+        // Add event listeners for download and view submissions
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('download-roadmap-btn').addEventListener('click', function() {
+                const text = document.getElementById('roadmap-content').innerText;
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'roadmap.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showToast('Roadmap downloaded successfully!');
+            });
+            
+            document.getElementById('view-submissions-btn').addEventListener('click', function() {
+                // Simulate loading submissions
+                showToast('Loading submissions...', 'info');
+                
+                setTimeout(() => {
+                    // Create mock submissions for demo
+                    const mockSubmissions = [
+                        { name: 'John Doe', role: 'Software Developer', experience: '1-3 years', date: '2023-10-15' },
+                        { name: 'Jane Smith', role: 'Data Scientist', experience: '0-1 years', date: '2023-10-14' },
+                        { name: 'Alex Johnson', role: 'Marketing Manager', experience: '3-5 years', date: '2023-10-13' }
+                    ];
+                    
+                    let html = '<h3 class="mt-4">Previous Submissions</h3><table class="table table-striped"><thead><tr>';
+                    if (mockSubmissions.length > 0) {
+                        Object.keys(mockSubmissions[0]).forEach(key => {
+                            html += `<th>${key.charAt(0).toUpperCase() + key.slice(1)}</th>`;
+                        });
+                        html += '</tr></thead><tbody>';
+                        mockSubmissions.forEach(row => {
+                            html += '<tr>';
+                            Object.values(row).forEach(val => {
+                                html += `<td>${val}</td>`;
+                            });
+                            html += '</tr>';
+                        });
+                    } else {
+                        html += '<td colspan="4">No submissions found.</td></tr>';
+                    }
+                    html += '</tbody></table>';
+                    document.getElementById('submissions-table').innerHTML = html;
+                }, 1000);
+            });
+        });
+
+        // Inline validation for name field
+        const nameInput = document.getElementById('user-name');
+        const greetingDiv = document.getElementById('greeting');
+        nameInput.addEventListener('input', function() {
+            if (nameInput.value.trim().length > 0) {
+                nameInput.classList.remove('is-invalid');
+                nameInput.classList.add('is-valid');
+                greetingDiv.textContent = `Hello, ${nameInput.value.trim()}! Welcome to Skill Sprint.`;
+                greetingDiv.classList.remove('d-none');
+            } else {
+                nameInput.classList.remove('is-valid');
+                nameInput.classList.add('is-invalid');
+                greetingDiv.classList.add('d-none');
+            }
+        });
+
+        // AI Mentorship Chat: send message to backend and show response
+        let waitingForAI = false;
+        let chatHistory = [];
+        function sendMessage() {
+            if (waitingForAI) return;
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            addChatBubble('user', message);
+            input.value = '';
+            chatHistory.push({ user: message });
+            
+            // Typing indicator, disable input/button while waiting
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai-message';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = '<em>AI Mentor is typing...</em>';
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            input.disabled = true;
+            document.querySelector('.chat-input button').disabled = true;
+            waitingForAI = true;
+            
+            // Simulate AI response
+            setTimeout(() => {
+                const response = simulateAIResponse(message, state.selectedJobRole, state.skillGaps);
+                const typing = document.getElementById('typingIndicator');
+                if (typing) typing.remove();
+                addChatBubble('ai', response);
+                chatHistory[chatHistory.length - 1].ai = response;
+                input.disabled = false;
+                document.querySelector('.chat-input button').disabled = false;
+                input.focus();
+                waitingForAI = false;
+                showQuickReplies();
+            }, 1500);
+        }
+        
+        function simulateAIResponse(message, jobRole, skillGaps) {
+            message = message.toLowerCase();
+            if (message.includes('hello') || message.includes('hi')) {
+                return `Hello! I'm your AI mentor. How can I assist you with your career in ${jobRole}?`;
+            } else if (message.includes('skill') || message.includes('gap')) {
+                return `Based on your assessment, your skill gaps are: ${skillGaps.join(', ')}. I recommend focusing on these areas first.`;
+            } else if (message.includes('resource')) {
+                return `For ${jobRole}, I recommend checking SAP Learning Hub for official resources, online learning platforms like Coursera and Udemy, and official documentation.`;
+            } else if (message.includes('thank')) {
+                return `You're welcome! Let me know if you have any other questions about your career development.`;
+            } else if (message.includes('roadmap') || message.includes('plan')) {
+                return `Your personalized roadmap includes focusing on your skill gaps, completing relevant projects, and seeking mentorship. Would you like me to explain any specific part in more detail?`;
+            } else if (message.includes('sap')) {
+                return `SAP offers many career paths including development, consulting, and analytics. Based on your interest in ${jobRole}, I recommend exploring SAP certifications and hands-on projects.`;
+            } else {
+                return `I'm here to help you with your career development in ${jobRole}. Based on your skill gaps in ${skillGaps.join(', ')}, I recommend focusing on practical projects and seeking mentorship opportunities. How else can I assist you?`;
+            }
+        }
+        
+        function addChatBubble(role, text) {
+            const chatMessages = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message ' + (role === 'user' ? 'user-message' : 'ai-message');
+            msgDiv.innerHTML = `
+                <div style="display:flex;align-items:center;">
+                    <span style="font-size:1.5em;margin-right:8px;">${role === 'user' ? '🧑' : '🤖'}</span>
+                    <div>
+                        <strong>${role === 'user' ? 'You' : 'AI Mentor'}</strong>
+                        <span style="font-size:0.8em;color:#888;margin-left:8px;">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                </div>
+                <div style="margin-left:40px;">${role === 'ai' ? marked.parse(text) : text}</div>
+            `;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Send on Enter key
+        const chatInput = document.getElementById('chatInput');
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Show quick replies based on skill gaps
+        function showQuickReplies() {
+            const quickRepliesDiv = document.getElementById('quickReplies');
+            quickRepliesDiv.innerHTML = '';
+            if (state.skillGaps && state.skillGaps.length > 0) {
+                state.skillGaps.slice(0,3).forEach(gap => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-outline-info btn-sm me-2 mb-1';
+                    btn.textContent = `How can I improve my ${gap}?`;
+                    btn.onclick = function() {
+                        document.getElementById('chatInput').value = btn.textContent;
+                        sendMessage();
+                    };
+                    quickRepliesDiv.appendChild(btn);
+                });
+            }
+        }
+
+        // Show AI welcome message when mentorship chat opens
+        function openMentorshipChat() {
+            document.getElementById('roadmap-section').classList.add('hidden');
+            document.getElementById('mentorship-step').style.display = 'block';
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            chatHistory = [];
+            addChatBubble('ai', `Hello! I'm your AI career coach. Based on your profile as a <b>${state.selectedJobRole || 'professional'}</b>, I'm here to help you with your career development. What would you like to discuss today?`);
+            document.getElementById('chatInput').focus();
+            showQuickReplies();
+            
+            // Award XP for starting mentorship
+            gameState.addXP(15);
+        }
+
+        // Add step navigation logic to show mentorship step
+        function showStep(stepId) {
+            document.querySelectorAll('.card.step').forEach(el => el.style.display = 'none');
+            document.getElementById(stepId).style.display = 'block';
+        }
+        
+        // View learning path
+        function viewLearningPath() {
+            document.getElementById('input-section').classList.add('hidden');
+            document.getElementById('roadmap-section').classList.remove('hidden');
+            generateRoadmapContent();
+            
+            // Award XP for exploring learning path
+            gameState.addXP(10);
+        }
+        
+        // Initialize player stats
+        gameState.updatePlayerStats();
+
+        // ======================
+        // PUZZLE GAME IMPLEMENTATION
+        // ======================
+        const puzzleGame = {
+            symbols: ['📊', '💼', '📦', '💰', '📱', '🌐', '🔒', '📈', '🔍', '🤝', '🚚', '📋'],
+            game: {
+                canFlip: false,
+                timeLeft: 60,
+                score: 0,
+                moves: 0,
+                matchedPairs: 0,
+                flippedCards: [],
+                timer: null
+            },
+            
+            // Start the puzzle game
+            startGame() {
+                document.getElementById('start-btn').disabled = true;
+                this.game.canFlip = true;
+                this.game.timeLeft = 60;
+                this.game.score = 0;
+                this.game.moves = 0;
+                this.game.matchedPairs = 0;
+                this.game.flippedCards = [];
+                
+                // Update UI
+                document.getElementById('game-timer').textContent = this.game.timeLeft;
+                document.getElementById('game-score').textContent = this.game.score;
+                document.getElementById('game-moves').textContent = this.game.moves;
+                
+                // Start timer
+                this.game.timer = setInterval(() => {
+                    this.game.timeLeft--;
+                    document.getElementById('game-timer').textContent = this.game.timeLeft;
+                    
+                    if (this.game.timeLeft <= 0) {
+                        this.endGame();
+                    }
+                }, 1000);
+                
+                // Create game board
+                this.createGameBoard();
+            },
+            
+            // Create game board
+            createGameBoard() {
+                const puzzleArea = document.getElementById('puzzle-area');
+                puzzleArea.innerHTML = '';
+                
+                // Duplicate symbols to create pairs
+                const gameSymbols = [...this.symbols.slice(0, 8), ...this.symbols.slice(0, 8)];
+                
+                // Shuffle symbols
+                gameSymbols.sort(() => Math.random() - 0.5);
+                
+                // Create cards
+                gameSymbols.forEach((symbol, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'puzzle-card';
+                    card.dataset.symbol = symbol;
+                    card.dataset.index = index;
+                    card.innerHTML = `<span class="symbol-hidden">?</span>`;
+                    
+                    card.addEventListener('click', () => this.flipCard(card));
+                    puzzleArea.appendChild(card);
+                });
+            },
+            
+            // Flip card
+            flipCard(card) {
+                if (!this.game.canFlip || this.game.flippedCards.length >= 2 || 
+                    card.classList.contains('matched') || card.classList.contains('flipped')) {
+                    return;
+                }
+                
+                card.classList.add('flipped');
+                card.innerHTML = card.dataset.symbol;
+                this.game.flippedCards.push(card);
+                
+                if (this.game.flippedCards.length === 2) {
+                    this.game.moves++;
+                    document.getElementById('game-moves').textContent = this.game.moves;
+                    this.game.canFlip = false;
+                    
+                    setTimeout(() => this.checkMatch(), 800);
+                }
+            },
+            
+            // Check if cards match
+            checkMatch() {
+                const [card1, card2] = this.game.flippedCards;
+                
+                if (card1.dataset.symbol === card2.dataset.symbol) {
+                    // Match found
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    this.game.matchedPairs++;
+                    this.game.score += 20;
+                    document.getElementById('game-score').textContent = this.game.score;
+                    
+                    // Check if game is complete
+                    if (this.game.matchedPairs === 8) {
+                        this.endGame(true);
+                    }
+                } else {
+                    // No match - flip cards back
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    card1.innerHTML = '<span class="symbol-hidden">?</span>';
+                    card2.innerHTML = '<span class="symbol-hidden">?</span>';
+                }
+                
+                this.game.flippedCards = [];
+                this.game.canFlip = true;
+            },
+            
+            // End the game
+            endGame(isWin = false) {
+                clearInterval(this.game.timer);
+                this.game.canFlip = false;
+                
+                if (isWin) {
+                    showToast('Congratulations! You completed the challenge!', 'success');
+                    // Award XP for completing challenge
+                    gameState.addXP(50);
+                    gameState.unlockAchievement("Memory Master", "Completed the SAP Memory Challenge");
+                    document.getElementById('retryChallengeBtn').classList.remove('hidden');
+                } else {
+                    showToast('Time is up! Try again.', 'danger');
+                    document.getElementById('start-btn').disabled = false;
+                }
+            }
+        };
+        
+        // ======================
+        // MODIFY EXISTING FUNCTIONS
+        // ======================
+        
+        // Modify startDailyChallenge function
+        function startDailyChallenge() {
+            // Hide challenge description, show game
+            document.querySelector('.challenge-content').classList.add('hidden');
+            document.getElementById('puzzle-game').classList.remove('hidden');
+            document.getElementById('startChallengeBtn').classList.add('hidden');
+            
+            // Initialize game
+            document.getElementById('start-btn').addEventListener('click', () => {
+                puzzleGame.startGame();
+            });
+            
+            // Retry button functionality
+            document.getElementById('retryChallengeBtn').addEventListener('click', () => {
+                document.getElementById('retryChallengeBtn').classList.add('hidden');
+                puzzleGame.startGame();
+            });
+        }
+        
+        // Add event listener for the start challenge button
+        document.getElementById('startChallengeBtn').addEventListener('click', startDailyChallenge);
+
+        // Initialize progress bar
+        updateProgressBar();
+
+        // Test backend connection on page load
+        function testBackendConnection(retryCount = 0) {
+            const maxRetries = 3;
+            const connectionBadge = document.getElementById('connectionBadge');
+            const retryButton = document.getElementById('retryConnection');
+            
+            // Update UI to show connecting state
+            if (retryCount === 0) {
+                connectionBadge.className = 'badge bg-secondary';
+                connectionBadge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+                retryButton.style.display = 'none';
+            }
+            
+            console.log(`Attempting backend connection (attempt ${retryCount + 1}/${maxRetries + 1})...`);
+            
+            // Add a small delay to ensure the page is fully loaded
+            setTimeout(() => {
+                // Try multiple endpoints to test connection
+                const testUrls = ['/api/test', 'http://localhost:5000/api/test'];
+                let currentUrlIndex = 0;
+                
+                function tryNextUrl() {
+                    if (currentUrlIndex >= testUrls.length) {
+                        // All URLs failed
+                        handleConnectionFailure(retryCount, maxRetries, connectionBadge, retryButton);
+                        return;
+                    }
+                    
+                    const testUrl = testUrls[currentUrlIndex];
+                    console.log(`Trying URL: ${testUrl}`);
+                    
+                    fetch(testUrl, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(res => {
+                        console.log(`Response status: ${res.status}`);
+                        if (!res.ok) {
+                            throw new Error(`HTTP ${res.status}`);
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        console.log('Response data:', data);
+                        if (data.success) {
+                            console.log('Backend server is running:', data.message);
+                            // Update UI to show connected state
+                            connectionBadge.className = 'badge bg-success';
+                            connectionBadge.innerHTML = '<i class="fas fa-check"></i> Connected';
+                            retryButton.style.display = 'none';
+                            
+                            // Only show success toast if we haven't already shown an error
+                            if (!window.backendErrorShown) {
+                                showToast('Connected to Skill Sprint Pro server', 'success');
+                            }
+                            window.backendConnected = true;
+                        } else {
+                            throw new Error('Server response indicates failure');
+                        }
+                    })
+                    .catch(err => {
+                        console.warn(`Failed to connect to ${testUrl}:`, err);
+                        currentUrlIndex++;
+                        if (currentUrlIndex < testUrls.length) {
+                            console.log('Trying next URL...');
+                            setTimeout(tryNextUrl, 500);
+                        } else {
+                            // All URLs failed
+                            handleConnectionFailure(retryCount, maxRetries, connectionBadge, retryButton);
+                        }
+                    });
+                }
+                
+                tryNextUrl();
+            }, retryCount === 0 ? 1000 : 0); // Only delay on first attempt
+        }
+        
+        function handleConnectionFailure(retryCount, maxRetries, connectionBadge, retryButton) {
+            console.warn(`Backend connection attempt ${retryCount + 1} failed`);
+            
+            // Retry if we haven't exceeded max retries
+            if (retryCount < maxRetries) {
+                console.log(`Retrying backend connection in 2 seconds... (${retryCount + 1}/${maxRetries})`);
+                connectionBadge.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Retrying... (${retryCount + 1}/${maxRetries})`;
+                setTimeout(() => testBackendConnection(retryCount + 1), 2000);
+            } else {
+                // Final failure after all retries
+                connectionBadge.className = 'badge bg-warning';
+                connectionBadge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Offline Mode';
+                retryButton.style.display = 'inline-block';
+                
+                window.backendErrorShown = true;
+                window.backendConnected = false;
+                showToast('Backend server not available. Running in offline mode.', 'warning');
+                
+                // Log detailed error information
+                console.error('Backend connection failed after all retries. Please check:');
+                console.error('1. Is the server running on port 5000?');
+                console.error('2. Are there any CORS issues?');
+                console.error('3. Is the server accessible at http://localhost:5000?');
+            }
+        }
+
+        // Call test function on page load
+        testBackendConnection();
+        
+        // Manual connection test function (for debugging)
+        window.debugConnection = function() {
+            console.log('=== Manual Connection Debug ===');
+            console.log('Current URL:', window.location.href);
+            console.log('Backend connected:', window.backendConnected);
+            
+            // Test direct fetch
+            fetch('/api/test')
+                .then(res => {
+                    console.log('Direct fetch response status:', res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('Direct fetch response data:', data);
+                })
+                .catch(err => {
+                    console.error('Direct fetch error:', err);
+                });
+                
+            // Test health endpoint
+            fetch('/health')
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Health check response:', data);
+                })
+                .catch(err => {
+                    console.error('Health check error:', err);
+                });
+        };
+    </script>
+</body>
+</html>
